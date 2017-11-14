@@ -6,10 +6,10 @@ open Microsoft.Data.Sqlite
 
 open ToDoTypes
 
-module LunchAccess =
+module DataAccess =
     let private connString = "Filename=" + Path.Combine(Directory.GetCurrentDirectory(), "StickyNotes.db")
 
-    let addLunch (lunchSpot: ToDo) =
+    let addNote (note: ToDo) =
         use conn = new SqliteConnection(connString)
         conn.Open()
         
@@ -21,8 +21,8 @@ module LunchAccess =
 insert into ToDos (Description, IsDone)
 values ($Description, $IsDone)"
 
-        cmd.Parameters.AddWithValue("$Description", lunchSpot.Description) |> ignore
-        cmd.Parameters.AddWithValue("$IsDone", lunchSpot.IsDone) |> ignore
+        cmd.Parameters.AddWithValue("$Description", note.Description) |> ignore
+        cmd.Parameters.AddWithValue("$IsDone", note.IsDone) |> ignore
 
         cmd.ExecuteNonQuery() |> ignore
 
@@ -46,7 +46,7 @@ values ($Description, $IsDone)"
         
         txn.Commit()
 
-    let private getLunchFetchingQuery filter =
+    let private getNoteFetchingQuery filter =
     
         let isDonePart, hasIsDonePart =
             match filter.IsDone with
@@ -62,8 +62,8 @@ values ($Description, $IsDone)"
 
         query
 
-    let getLunches (filter: ToDoFilter) =
-        let query = getLunchFetchingQuery filter
+    let getNotes (filter: ToDoFilter) =
+        let query = getNoteFetchingQuery filter
 
         use conn = new SqliteConnection(connString)
         conn.Open()

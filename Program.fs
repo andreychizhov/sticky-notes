@@ -20,33 +20,33 @@ open Giraffe.HttpContextExtensions
 open ToDoTypes
 open DataAccess
 
-let handleLunchFilter =
+let handleToDoFilter =
     fun (next: HttpFunc) (ctx : HttpContext) ->
         let filter = ctx.BindQueryString<ToDoFilter>()
-        let lunchSpots = LunchAccess.getLunches filter
-        json lunchSpots next ctx
+        let todoSpots = DataAccess.getNotes filter
+        json todoSpots next ctx
 
-let handleAddLunch =
+let handleAddToDo =
     fun (next: HttpFunc) (ctx : HttpContext) ->
         task {
-            let! lunch = ctx.BindJson<ToDo>()
-            LunchAccess.addLunch lunch
-            return! text (sprintf "Added %s to the toto list." lunch.Description) next ctx
+            let! todo = ctx.BindJson<ToDo>()
+            DataAccess.addNote todo
+            return! text (sprintf "Added %s to the toto list." todo.Description) next ctx
         }
 
 let handleUpdateToDo = 
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
             let! todo = ctx.BindJson<ToDo>()
-            LunchAccess.updateToDo todo
+            DataAccess.updateToDo todo
             return! text (sprintf "Task %s has been updated." todo.Description) next ctx
         }
 
 let webApp =
     choose [
-        GET >=> route "/todo" >=> handleLunchFilter
-        POST >=> route "/todo" >=> handleAddLunch
-        PUT >=> route "/todo" >=> handleUpdateToDo
+        GET >=> route "/todo" >=> handleToDoFilter
+        POST >=> route "/todo/add" >=> handleAddToDo
+        PUT >=> route "/todo/update" >=> handleUpdateToDo
         setStatusCode 404 >=> text "Not Found" ]
 
 let errorHandler (ex : Exception) (logger : ILogger) =
